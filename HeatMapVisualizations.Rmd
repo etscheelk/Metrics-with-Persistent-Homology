@@ -1,0 +1,62 @@
+---
+title: "Distance Matrix"
+author: "Ethan Scheelk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+dist = read.csv("out/out-dragon_vrip.ply.txt_2000_.csv")
+# dist = read.csv("out-house104_edge_list.txt_0.72344_point_cloud - Copy.csv")
+# dist = read.csv("out-HIV1_2011.all.nt.concat.fa_hdm.txt_point_cloud.csv")
+# dist = read.csv("out-HIV1_2011.all.nt.concat.fa_hdm.txt_point_cloud - Copy.csv")
+# dist = read.csv("out-points400_2.csv")
+library("ggplot2")
+```
+
+```{r}
+rm = data.matrix(dist[1:11, -1])
+
+dim = ncol(rm)
+
+par(mar = c(5, 7, 2, 2))
+# hcl.pals(type = "sequential")
+# image(1:dim, 1:dim, rm, axes = FALSE, xlab="", ylab = "", col = gray.colors(6, start = 0.4, rev = FALSE))
+image(1:dim, 1:dim, rm, axes = FALSE, xlab="", ylab = "", col = hcl.colors(100, palette = "Greens 2", rev = TRUE, fixup = TRUE))
+# axis(1, 1:dim, dist[1:11,1], cex.axis = 0.6, las = 3)
+axis(1, 1:dim, labels=FALSE, tck = -0.1, lty = 2)
+text(x = seq(as.vector(dist[1:11, 1])), par("usr")[3] - 0.15, labels = dist[1:11,1], srt = 50, pos = 1, xpd = TRUE, cex = 0.7, offset = 2)
+
+# axis(2, 1:dim, dist[1:11,1], cex.axis = 0.6, las = 1)
+axis(2, 1:dim, labels=FALSE, lty = 2)
+text(y = seq(as.vector(dist[1:11,1])), par("usr")[1], labels = dist[1:11, 1], srt = 0, pos = 2, xpd = TRUE, cex = 0.7, offset = 1)
+
+title("Stanford Dragon 2000 points")
+text(expand.grid(1:dim, 1:dim), sprintf("%.4f", rm), cex = 0.6, col = "Black")
+```
+
+```{r}
+heatmap(rm)
+```
+
+
+
+
+```{r}
+nba <- read.csv("http://datasets.flowingdata.com/ppg2008.csv")
+
+dst <- dist(nba[1:20, -1],)
+dst <- data.matrix(dst)
+
+dim <- ncol(dst)
+
+image(1:dim, 1:dim, dst, axes = FALSE, xlab="", ylab="")
+
+axis(1, 1:dim, nba[1:20,1], cex.axis = 0.5, las=3)
+axis(2, 1:dim, nba[1:20,1], cex.axis = 0.5, las=1)
+
+text(expand.grid(1:dim, 1:dim), sprintf("%0.1f", dst), cex=0.6)
+```
+
+
+
