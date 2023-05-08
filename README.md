@@ -14,3 +14,5 @@ Paper link: [here](The_Choice_and_Impact_of_Metric_in_Persistent_Homology_eschee
 ![](figures/page1.png)
 
 ![](figures/page2.png)
+
+![](figures/torus400D.png)
