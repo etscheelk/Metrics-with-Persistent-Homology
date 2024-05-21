@@ -6,11 +6,13 @@ output: html_document
 ---
 
 ```{r}
-dist = read.csv("out/out-dragon_vrip.ply.txt_2000_.csv")
+# dist = read.csv("out/out-dragon_vrip.ply.txt_2000_.csv")
+# dist = read.csv("./out/out-house104_edge_list.txt_0.72344_point_cloud.csv")
 # dist = read.csv("out-house104_edge_list.txt_0.72344_point_cloud - Copy.csv")
+# dist = read.csv("./out/out-celegans_weighted_undirected_reindexed_for_matlab.txt_maxdist_2.6429_SP_distmat.txt_point_cloud.csv")
 # dist = read.csv("out-HIV1_2011.all.nt.concat.fa_hdm.txt_point_cloud.csv")
 # dist = read.csv("out-HIV1_2011.all.nt.concat.fa_hdm.txt_point_cloud - Copy.csv")
-# dist = read.csv("out-points400_2.csv")
+dist = read.csv("out/out-points400_2.csv")
 library("ggplot2")
 ```
 
@@ -31,16 +33,13 @@ text(x = seq(as.vector(dist[1:11, 1])), par("usr")[3] - 0.15, labels = dist[1:11
 axis(2, 1:dim, labels=FALSE, lty = 2)
 text(y = seq(as.vector(dist[1:11,1])), par("usr")[1], labels = dist[1:11, 1], srt = 0, pos = 2, xpd = TRUE, cex = 0.7, offset = 1)
 
-title("Stanford Dragon 2000 points")
+title("Torus in 400D")
 text(expand.grid(1:dim, 1:dim), sprintf("%.4f", rm), cex = 0.6, col = "Black")
 ```
 
 ```{r}
 heatmap(rm)
 ```
-
-
-
 
 ```{r}
 nba <- read.csv("http://datasets.flowingdata.com/ppg2008.csv")
@@ -58,5 +57,226 @@ axis(2, 1:dim, nba[1:20,1], cex.axis = 0.5, las=1)
 text(expand.grid(1:dim, 1:dim), sprintf("%0.1f", dst), cex=0.6)
 ```
 
+# TDA Filtration and Diagram
 
+```{r}
+numPoints = 100
+maxMove = 2
+
+theta = seq(0, 2 * pi, length = numPoints)
+x = cos(theta) + runif(numPoints, min = -maxMove, max = maxMove)
+y = sin(theta) + runif(numPoints, min = -maxMove, max = maxMove)
+
+qplot(x, y, asp = 1, margins = 0)
+
+mat = rbind(x, y)
+mat = t(mat)
+# knitr::kable(mat)
+
+filt = TDA::ripsFiltration(mat, maxdimension = 1, maxscale = 2)
+
+diag = TDA::ripsDiag(mat, maxdimension = 2, maxscale = 1, printProgress = TRUE)
+# diag = TDA::filtrationDiag(filt, maxdimension = 1, )
+
+plot(diag[["diagram"]], barcode = TRUE)
+```
+
+$$ 
+\begin{pmatrix}
+0 \\
+0
+\end{pmatrix}
+\rightarrow
+\begin{pmatrix} 
+4 \\
+3
+\end{pmatrix}
+\\ \\ 
+4 + 3 = 7
+$$
+
+$$
+D = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}
+$$
+$$
+d(\vec{v}, \vec{q}) = \left( \sum_{i=1}^{n} |v_i - q_i|^p \right)^{\frac{1}{p}}\\
+$$
+$$
+d(\vec{v}, \vec{q}) = \max_{i}\left( |v_i - q_i|\right) \text{as    } p \to \infty 
+$$
+
+```{r}
+x = c(4, 0, 0)
+y = c(3, 3, 0)
+
+qplot(x, y) + 
+  geom_vline(xintercept = 0, color = "blue") + 
+  geom_hline(yintercept = 3, color = "blue") + 
+  geom_abline(slope = 3/4, intercept = 0, color = "red")
+```
+
+```{r}
+library(TDA)
+
+# TDA::funFiltration
+
+file = read.csv("./scav/data/points2.csv")
+file = read.csv("./scav/data/points400_2.csv")
+mat = as.matrix(file)
+
+filt = TDA::ripsFiltration(mat, maxdimension = 3, maxscale = 6)
+
+# diag = TDA::ripsDiag(mat, maxdimension = 2, maxscale = 2, printProgress = TRUE)
+diag = TDA::filtrationDiag(filt, maxdimension = 3)
+
+plot(diag[["diagram"]], barcode = FALSE)
+```
+```{r}
+# Load required libraries
+library(ggplot2)
+
+# Generate some sample data
+set.seed(123)
+n <- 100
+data <- data.frame(
+  x = rnorm(n),
+  y = rnorm(n)
+)
+
+# Plot the point cloud with transparent circles
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(alpha = 0.1, size = 10) +  # Larger circles with alpha = 0.1
+  geom_point(alpha = 1, size = 2, color = "red") +  # Smaller circles with alpha = 1
+  theme_minimal() +  # Optional: Change plot theme
+  coord_fixed()  # Set aspect ratio to be square
+
+
+```
+
+```{r}
+# Load required libraries
+library(ggplot2)
+
+# Generate some sample data
+set.seed(69)
+n <- 100
+data <- data.frame(
+  x = rnorm(n),
+  y = rnorm(n)
+)
+
+# Function to calculate distances between points
+calculate_distances <- function(data) {
+  dist_matrix <- as.matrix(dist(data))
+  return(dist_matrix)
+}
+
+# Function to determine which points are sufficiently close
+points_within_radius <- function(distances, radius) {
+  close_points <- which(distances <= radius, arr.ind = TRUE)
+  return(close_points)
+}
+
+# Calculate distances between points
+distances <- calculate_distances(data)
+
+# Define radius for connecting points
+radius <- 1
+
+# Find points within radius
+close_points <- points_within_radius(distances, radius)
+
+# Extract pairs of points within radius
+connected_points <- data.frame(
+  x1 = data$x[close_points[, 1]],
+  y1 = data$y[close_points[, 1]],
+  x2 = data$x[close_points[, 2]],
+  y2 = data$y[close_points[, 2]]
+)
+
+# Plot the point cloud with transparent circles and connections
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(alpha = 0.1, size = 20) +  # Larger circles with alpha = 0.1
+  geom_point(alpha = 1, size = 2, color = "red") +  # Smaller circles with alpha = 1
+  geom_segment(data = connected_points, aes(x = x1, y = y1, xend = x2, yend = y2), color = "blue", alpha = 0.5) +  # Connect points within radius
+  theme_minimal() +  # Optional: Change plot theme
+  coord_fixed()  # Set aspect ratio to be square
+
+```
+
+# Plot visualizations
+
+```{r}
+# Load required libraries
+library(ggplot2)
+
+generate = function(distanceThreshold, diag=NULL) {
+  # Generate some sample data
+  set.seed(2)
+  n <- 100
+  offset = 0.5
+  
+  theta = seq(0, 2*pi, length = n)
+  
+  
+  data <- data.frame(
+    x = cos(theta) + runif(n = n, min = -offset, offset), #rnorm(n, mean = 0, sd = 0.2),
+    y = sin(theta) + runif(n = n, min = -offset, offset) #rnorm(n, mean = 0, sd = 0.2)
+  )
+  
+  # data = sp
+  
+  # Set the distance threshold based on the radius of the larger circles
+  # You can adjust this value based on your needs
+  distance_threshold <- 0.0
+  distance_threshold = distanceThreshold
+  
+  # Calculate pairwise distances between points
+  distances <- as.matrix(dist(data[, c("x", "y")]))
+  
+  # Create a logical matrix indicating which points are sufficiently close
+  close_points <- distances <= distance_threshold
+  
+  # Create a data frame to store connected points
+  connected_points <- data.frame(
+    x = rep(data$x, each = n),
+    y = rep(data$y, each = n),
+    xend = rep(data$x, times = n),
+    yend = rep(data$y, times = n),
+    close = as.vector(close_points)
+  )
+  
+  # Plot the point cloud with transparent circles and connections between close points
+  # png(width = 500, height = 500, filename = sprintf("./example/pc_d%f.png", distance_threshold))
+  
+  a = ggplot(data, aes(x = x, y = y)) +
+    geom_point(alpha = 0.0, size = 20) +  # Larger circles with alpha = 0.1
+    geom_segment(data = subset(connected_points, close),
+                 aes(x = x, y = y, xend = xend, yend = yend),
+                 alpha = 0.3, color = "blue", size = 1) +  # Connect close points
+    geom_point(alpha = 1, size = 2, color = "red") +  # Smaller circles with alpha = 1
+    #theme_minimal() +  # Optional: Change plot theme
+    ggtitle(label = sprintf("epsilon: %.3f", distance_threshold)) +
+    coord_fixed()  # Set aspect ratio to be square
+  # dev.off()
+  ggsave(filename = sprintf("./example/pc_d%.3f.png", distance_threshold))
+  
+  
+  png(filename = sprintf("./example/bc_d%.3f.png", distance_threshold))
+  if (is.null(diag)) {
+    diag = TDA::ripsDiag(data, maxdimension = 2, maxscale = 1, printProgress = FALSE)
+  }
+  b = plot(diag[["diagram"]], barcode = TRUE) + abline(v=distance_threshold)
+  dev.off()
+  
+  return(diag)
+}
+
+# generate(0.2)
+threshs = seq(0, 1, by = 0.05)
+diag = NULL
+for (t in threshs) {
+  diag = generate(t, diag)
+}
+```
 

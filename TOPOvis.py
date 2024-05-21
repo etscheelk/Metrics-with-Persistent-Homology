@@ -57,7 +57,21 @@ def generatePersDistsCSV(filePath, file, outPath, delim = None):
     diagramList = []
     for i in range(ml):
         print("\tprogress: ", i)
-        diagramList.append(ripser.ripser(arr, maxdim=1, distance_matrix=False, metric=metrics[i])['dgms'][1])
+        diagram = ripser.ripser(arr, maxdim=1, distance_matrix=False, metric=metrics[i])['dgms'][1]
+        
+        print(diagram)
+        # rescale
+        m = 0
+        for (x, y) in diagram:
+            # if (arr.shape[0] > 0):
+            #     for (x, y) in arr:
+            m = y if (y > m) and (y < float('inf')) else m
+        
+        diagram /= m
+        
+        print("Maximum liftime found: ", m)
+        diagramList.append(diagram)
+    
     print("Diagram List Complete")
     
     for i in range(ml):
@@ -93,14 +107,24 @@ if __name__ == "__main__":
     
     # data = np.random.random((100,2))
     # diagram = ripser.ripser(data)["dgms"]
+    # metrics = [mink0p5, mink0p75, "cityblock", mink1p5, "euclidean", mink2p5, mink3, mink5, "chebyshev", "braycurtis", "hamming"]
+        ## data = np.loadtxt("finalProject/scav/data/points400_2.csv", delimiter=",", dtype = float)
+    # diagram = ripser.ripser(data, maxdim = 2, distance_matrix = False, metric = "hamming")['dgms']
     
-    data = np.loadtxt("finalProject/scav/data/points400_2.csv", delimiter=",", dtype = float)
-    diagram = ripser.ripser(data, maxdim = 2, distance_matrix = False, metric = "hamming")['dgms']
+    # m = 0
+    # for arr in diagram:
+    #     for (x, y) in arr:
+    #         m = y if (y > m) and (y < float('inf')) else m
+    # print("Maximum liftime found: ", m)
     
-    # # print(diagram)
-    plot_diagrams(diagram, show=False)
-    plt.title("points400_2 Hamming")
-    plt.show()
+    # # rescale
+    # for arr in diagram:
+    #     arr /= m
+    
+    # # # print(diagram)
+    # plot_diagrams(diagram, show=False)
+    # plt.title("points400_2 hamming")
+        ## plt.show()
     # arr = np.loadtxt("LaTeX\\2023-04-14 ETS HW9\\data\\points22.csv", delimiter=",", dtype=float)
     
     # arr1 = np.loadtxt("finalProject/data/points400_2-Reg.csv", delimiter=",", dtype=float)
@@ -111,7 +135,7 @@ if __name__ == "__main__":
     # generatePersDistsCSV("finalProject/PH-roadmap/data_sets/roadmap_datasets_point_cloud/", "dragon_vrip.ply.txt_2000_.txt", "finalProject/out/")
     # generatePersDistsCSV("finalProject/PH-roadmap/data_sets/roadmap_datasets_point_cloud/", "celegans_weighted_undirected_reindexed_for_matlab.txt_maxdist_2.6429_SP_distmat.txt_point_cloud.txt", "finalProject/out/")
     # generatePersDistsCSV("finalProject/PH-roadmap\data_sets/roadmap_datasets_point_cloud/", "HIV1_2011.all.nt.concat.fa_hdm.txt_point_cloud.txt", "finalProject/out/")
-    # generatePersDistsCSV("finalProject/PH-roadmap\data_sets/roadmap_datasets_point_cloud/", "house104_edge_list.txt_0.72344_point_cloud.txt", "finalProject/out/")
+    generatePersDistsCSV("finalProject/PH-roadmap\data_sets/roadmap_datasets_point_cloud/", "house104_edge_list.txt_0.72344_point_cloud.txt", "finalProject/out/")
     # generatePersDistsCSV("finalProject/scav/data/", "points1.csv", "finalProject/out/", delim=",")
     # generatePersDistsCSV("finalProject/scav/data/", "points6.csv", "finalProject/out/", delim=",")
     # generatePersDistsCSV("finalProject/scav/data/", "points12.csv", "finalProject/out/", delim=",")
